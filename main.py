@@ -21,7 +21,7 @@ def filter_result(raw_result):
     for item in raw_result:
         cs = (item['name'] + item['info']).lower()
         if ('ram' in cs or 'intel' in cs or 'gig' in cs or 'windows' in cs or 'linux' in cs
-            or 'core' in cs or 'amd' in cs) and (item['price'] <= 50 or ('4gig' not in cs and '4gig' not in cs
+            or 'core' in cs or 'amd' in cs) and (item['price'] <= 50 or ('4gig' not in cs and '4 gig' not in cs
                                                  and '4gb' not in cs and '4 gb' not in cs)) and item['id'] not in ids:
             result.append(item)
             ids.append(item['id'])

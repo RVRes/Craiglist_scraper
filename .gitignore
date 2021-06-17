@@ -130,3 +130,5 @@ dmypy.json
 
 .idea/
 /out.xlsx
+Reports/
+Data/

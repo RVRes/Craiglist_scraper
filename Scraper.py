@@ -53,12 +53,12 @@ class Scraper:
             if not el_price:
                 continue
             price = int(el_price.get_text()[1::].strip().replace(',', ''))
-            if not price or price <= self._min_price or price >= self._max_price:
-                continue
+            # if not price or price <= self._min_price or price >= self._max_price:
+            #     continue
             item['price'] = price
             # Datetime
             el_dt = el_item.find(*self._DATETIME_ARGS)
-            item['datetime'] = el_dt['datetime']
+            item['datetime'] = el_dt['datetime'].split(' ')[0]
             # Good link & info
             el_good = el_item.find(*self._LINK_ARGS)
             item['id'] = el_good['data-id']
@@ -68,21 +68,47 @@ class Scraper:
         return item_list
 
     def _get_sub_items(self, html: str):
-        item_list = []
+        item_dict = {}
         soup = bs(html, 'html.parser')
         # id
         el_id = soup.find('div', {'class': 'postinginfos'})
         id = el_id.findChild().get_text().split(': ')[1]
         if not id:
             return None
+        item_dict['id'] = id
         # Info
         el_info = soup.find('section', {'id': 'postingbody'})
         info = el_info.get_text().replace('QR Code Link to This Post', '').strip()
+        item_dict['info'] = info
+        # Attributes
+        el_attr = soup.findAll('p', {'class': 'attrgroup'})
+        if el_attr and len(el_attr) > 1:
+            el_attr = el_attr[-1].findAll('span')
+            for item in el_attr:
+                at = item.get_text().split(': ')
 
-        return {'id': id, 'info': info}
+                if at and len(at) == 2:
+                    at_name, at_info = at[0], at[1]
+                    item_dict[at_name] = at_info
+        return item_dict
+
+
+    def test_scrap(self):
+        pages = asyncio.get_event_loop().run_until_complete(
+            Scraper.start_session(['https://austin.craigslist.org/cto/d/seguin-smart-car-for-pure/7337517430.html']))
+        soup = bs(pages[0], 'html.parser')
+        # Attributes
+        el_attr = soup.findAll('p', {'class': 'attrgroup'})
+        if el_attr and len(el_attr) > 1:
+            el_attr = el_attr[-1].findAll('span')
+            for item in el_attr:
+                at_name, at_info = item.get_text().split(': ')
+                print(at_name, at_info)
 
     @property
     def scrap(self):
+        # self.test_scrap()
+
         pages = asyncio.get_event_loop().run_until_complete(
             Scraper.start_session(self._PAGES))
         result = []

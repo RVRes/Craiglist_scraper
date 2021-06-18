@@ -72,8 +72,9 @@ class Scraper:
         soup = bs(html, 'html.parser')
         # id
         el_id = soup.find('div', {'class': 'postinginfos'})
-        id = el_id.findChild().get_text().split(': ')[1]
-        if not id:
+        try:
+            id = el_id.findChild().get_text().split(': ')[1]
+        except:
             return None
         item_dict['id'] = id
         # Info

@@ -35,16 +35,16 @@ def loadData(filename):
 
 def filter_cpu_result(arg, raw_result):
     EXCEPTIONS = ['7334739070', '7336458858', '7335074640', '7332223384', '7335767507', '7335481330', '7335481271',
-                  '7322295229', '7324437075', '7336595666', '7327643157']
+                  '7322295229', '7324437075', '7336595666', '7327643157', '7330286131', '7330808578', '7337716315',
+                  '7337279290']
     date_from = datetime.strptime('2021-06-12', '%Y-%m-%d').date()
     result = []
     ids = []
     for item in raw_result:
         item_date = datetime.strptime(item['datetime'], '%Y-%m-%d').date()
         cs = (item['name'] + item['info']).lower()
-        if item_date >= date_from and item['id'] not in EXCEPTIONS and \
-                (
-                        'ram' in cs or 'intel' in cs or 'gig' in cs or 'windows' in cs or 'linux' in cs or 'core' in cs or 'amd' in cs) and (
+        if item_date >= date_from and item['id'] not in EXCEPTIONS and arg['min_price'] <= item['price'] <= arg['max_price'] and \
+                ('ram' in cs or 'intel' in cs or 'gig' in cs or 'windows' in cs or 'linux' in cs or 'core' in cs or 'amd' in cs) and (
                 item['price'] <= 50 or ('4gig' not in cs and '4 gig' not in cs
                                         and '4gb' not in cs and '4 gb' not in cs)) and \
                 item['id'] not in ids:
@@ -99,6 +99,7 @@ if __name__ == '__main__':
         ],
         'min_price': 0,
         'max_price': 150,
+        'type': 'cpu',
         'output_file': 'cpu_data',
         'scrap_time': None
     }
@@ -132,14 +133,17 @@ if __name__ == '__main__':
         ],
         'min_price': 2500,
         'max_price': 12000,
+        'type': 'car',
         'output_file': 'car_data',
         'scrap_time': None
     }
 
-    SEARCH = CAR
-
+    SEARCH = CPU
     result = get_raw(SEARCH)
-    result = filter_car_result(SEARCH, result)
+    if SEARCH['type'] == 'car':
+        result = filter_car_result(SEARCH, result)
+    elif SEARCH['type'] == 'cpu':
+        result = filter_cpu_result(SEARCH, result)
 
     print(tabulate(result, headers="keys", tablefmt="plain"))
     writeExcel(SEARCH['output_file'], result)

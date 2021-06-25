@@ -123,7 +123,7 @@ class Scraper:
             subresult = self._get_sub_items(page)
             #TODO переделать result в словарь, индекс сделать ключом, соединять по ключу.
             for item in result:
-                if item['id'] == subresult['id']:
+                if 'id' in item.keys() and 'id' in subresult.keys() and item['id'] == subresult['id']:
                     for k, v in subresult.items():
                         if k != 'id':
                             item[k] = v

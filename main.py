@@ -70,7 +70,7 @@ def filter_cpu_result(arg, raw_result):
 
 def filter_car_result(arg, raw_result):
     EXCEPTIONS = []
-    date_from = datetime.strptime('2021-06-07', '%Y-%m-%d').date()
+    date_from = datetime.strptime('2021-06-14', '%Y-%m-%d').date()
     result = []
     ids = []
     for item in raw_result:
@@ -79,8 +79,10 @@ def filter_car_result(arg, raw_result):
         if item_date >= date_from and item['id'] not in EXCEPTIONS \
                 and item['id'] not in ids \
                 and arg['min_price'] <= item['price'] <= arg['max_price'] \
-                and ('toyota' in cs or 'mazda' in cs or 'nissan' in cs) \
-                and ('odometer' not in item.keys() or int(item['odometer']) <= 140000):
+                and ('toyota' in cs or 'mazda' in cs or 'nissan' in cs or 'ford' in cs) \
+                and ('odometer' not in item.keys() or int(item['odometer']) <= 140000) \
+                and ('transmission' not in item.keys() or item['transmission'] != 'manual') \
+                and ('title status' not in item.keys() or item['title status'] != 'rebuilt'):
             result.append(item)
             ids.append(item['id'])
     return result

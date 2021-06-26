@@ -121,9 +121,11 @@ class Scraper:
             Scraper.start_session(subpages))
         for page in pages:
             subresult = self._get_sub_items(page)
+            if not subresult:
+                continue
             #TODO переделать result в словарь, индекс сделать ключом, соединять по ключу.
             for item in result:
-                if 'id' in item.keys() and 'id' in subresult.keys() and item['id'] == subresult['id']:
+                if item and 'id' in item.keys() and 'id' in subresult.keys() and item['id'] == subresult['id']:
                     for k, v in subresult.items():
                         if k != 'id':
                             item[k] = v

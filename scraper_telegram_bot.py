@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import re
 import os
 import pickle
+from Scraper import Scraper
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -63,6 +64,17 @@ def load_settings() -> dict:
     with open(f'{THIS_DIR}/Secrets/settings.txt') as json_file:
         data = json.load(json_file)
     return data
+
+
+def get_raw(args):
+    # для теста результат берется из файла
+    # with open(f'{THIS_DIR}/Data/car_data.dat', 'rb') as filehandle:
+    #     data = pickle.load(filehandle)
+    # result = data['data']
+    scraper = Scraper(**args)
+    result = scraper.scrap
+    result.sort(key=lambda x: x['price'])
+    return result
 
 
 def send_telegram(channels: str, text: str):
@@ -176,10 +188,8 @@ if __name__ == '__main__':
     channel_rvr = settings['channel_ids_rvr']
     today = datetime.today().date()
 
-    # send_telegram('test text')
-    with open(f'{THIS_DIR}/Data/car_data.dat', 'rb') as filehandle:
-        data = pickle.load(filehandle)
-    result = data['data']
+    result = get_raw(CAR)
+
     find_model_year(result)
     find_car_model(result)
     result = filter_car_result(CAR, result)

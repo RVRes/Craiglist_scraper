@@ -1,3 +1,4 @@
+#!/home/roman/scripts/craiglis_scrap/venv/bin/python
 import requests
 import json
 import pickle
@@ -174,5 +175,5 @@ if __name__ == '__main__':
         for item in result:
             send_telegram(channel_ids, f'{result[0]["link"]}')
 
-    print(result[0])
-    print(len(result))
+    # print(result[0])
+    # print(len(result))

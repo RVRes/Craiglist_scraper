@@ -1,3 +1,4 @@
+#!/home/roman/scripts/craiglis_scrap/venv/bin/python
 import aiohttp
 import asyncio
 from datetime import datetime

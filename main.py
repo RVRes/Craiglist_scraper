@@ -6,6 +6,8 @@ import pandas as pd
 from datetime import datetime, timedelta
 import pickle
 import openpyxl
+import re
+import sys
 
 DATA_DIR = 'Data'
 REPORTS_DIR = 'Reports'
@@ -70,21 +72,38 @@ def filter_cpu_result(arg, raw_result):
 
 def filter_car_result(arg, raw_result):
     EXCEPTIONS = []
-    date_from = datetime.strptime('2021-06-14', '%Y-%m-%d').date()
+    date_from = datetime.strptime('2021-06-12', '%Y-%m-%d').date()
     result = []
     ids = []
+    pnotts = []
     for item in raw_result:
         item_date = datetime.strptime(item['datetime'], '%Y-%m-%d').date()
-        cs = (item['name'] + item['info'] if 'info' in item.keys() else '').lower()
+        cs = (str(item['price'])+item['name'] + item['info'] if 'info' in item.keys() else '').lower()
+        pnott = (str(item['price'])+item['name']+
+                item['fuel'] if 'fuel' in item.keys() else '' +
+                item['title status'] if 'title status' in item.keys() else '' +
+                item['condition'] if 'condition' in item.keys() else '' +
+                item['area'] if 'area' in item.keys() else '' +
+                item['paint color'] if 'paint color' in item.keys() else '').lower()
         if item_date >= date_from and item['id'] not in EXCEPTIONS \
-                and item['id'] not in ids \
+                and item['id'] not in ids and pnott not in pnotts\
                 and arg['min_price'] <= item['price'] <= arg['max_price'] \
-                and ('toyota' in cs or 'mazda' in cs or 'nissan' in cs or 'ford' in cs) \
+                and ('toyota' in cs or 'mazda' in cs or 'nissan' in cs or 'ford' in cs
+                     or 'honda' in cs or 'hyundai' in cs or 'mitsubishi' in cs or 'kia' in cs) \
                 and ('odometer' not in item.keys() or int(item['odometer']) <= 140000) \
+                and ('year' not in item.keys() or item['year'] is None or int(item['year']) >= 2010) \
                 and ('transmission' not in item.keys() or item['transmission'] != 'manual') \
-                and ('title status' not in item.keys() or item['title status'] != 'rebuilt'):
+                and ('title status' not in item.keys() or item['title status'] == 'clean'):
+        # if item_date >= date_from and item['id'] not in EXCEPTIONS \
+        #         and item['id'] not in ids and cs not in css\
+        #         and ('camry' in cs) \
+        #         and ('odometer' not in item.keys() or int(item['odometer']) <= 200000) \
+        #         and ('year' not in item.keys() or item['year'] is None or int(item['year']) >= 2000) \
+        #         and ('transmission' not in item.keys() or item['transmission'] != 'manual') \
+        #         and ('title status' not in item.keys() or item['title status'] != 'rebuilt'):
             result.append(item)
             ids.append(item['id'])
+            pnotts.append(pnott)
     return result
 
 
@@ -99,13 +118,50 @@ def get_raw(args):
     return result
 
 
+def find_model_year(input_list: list):
+    pattern = '(20|19)\d\d'
+    for item in input_list:
+        cs = (item['name'] + item['info'] if 'info' in item.keys() else '')
+        year = re.search(pattern, cs)
+        item['year'] = str(year[0]) if year else None
+
+def find_car_model(input_list: list):
+    VENDORS = ['toyota', 'nissan', 'hyundai', 'ford', 'mitsubishi', 'mazda', 'honda', 'cadillac', 'chevrolet', 'kia',
+               'audi', 'mercedes', 'lexus', 'jeep', 'volkswagen', 'dodge', 'bmw', 'chrysler', 'mini cooper',
+               'range rover']
+    MODELS = ['camry', 'corolla', 'elantra', 'focus', 'sentra', 'lancer', 'altima', 'civic', 'crown', 'fiesta', 'accent',
+              'tucson', 'accord', 'rogue', 'cube', 'prius', 'escape', 'cr-v', 'tundra', 'sienna', 'cruze', 'outlander',
+              'avalon', 'murano', 'explorer', 'cx9', 'mustang', 'mazda 3', 'mazda3', 'optima', 'f250', 'soul', 'f-150',
+              'f150', 'sonata', 'eclipse', 'flex', 'ranger', 'mirage', 'q5', 'veloster', 'glk 350', 'edge', 'es350',
+              'srx', 'odyssey', 'juke', 'frontier', 'expedition', 'taurus', 'santa fe', 'compass', 'cherokee', 'golf',
+              'durango', '535xi', 'charger', 'is 250', 'sorento', 'pathfinder', 'venza', 'e 350', 'pilot', 'f-350',
+              'trax', 'mx-5', 'cx-5', 'forte', 'cts', 'scion', 'ats', 'versa', 'thunderbird', 'mazda 5', 'fusion',
+              'tiguan', 'f-510', 'fit lx', 'ct 200h', 'sedona', '200 s', 'hardtop', 'mazda 6', '528i', 'chrysler 200',
+              'range rover', 'transit', 'rav 4', 'rav4', 'endeavaor', 'sportage']
+
+    for item in input_list:
+        name = item['name'].lower() if item and 'name' in item.keys() and item['name'] else ''
+        info = item['info'].lower() if item and 'info' in item.keys() and item['info'] else ''
+        car_vendor = [vendor for vendor in VENDORS if vendor in name]
+        car_model = [model for model in MODELS if model in name]
+        car_vendor = car_vendor if car_vendor else [vendor for vendor in VENDORS if vendor in info]
+        car_model = car_model if car_model else [model for model in MODELS if model in info]
+        item['vendor'] = car_vendor[0].title() if isinstance(car_vendor, list) and car_vendor else ''
+        item['model'] = car_model[0].title() if isinstance(car_model, list) and car_model else ''
+
+
 def sort_columns(input_list: list) -> list:
-    first = ['id', 'area', 'datetime']
+    first = ['id', 'area', 'datetime', 'year', 'price', 'vendor', 'model']
     last = ['link', 'name', 'info']
-    result =[]
+    middle = []
+    for item in input_list:
+        for key in item.keys():
+            if key not in first and key not in last and key not in middle:
+                middle.append(key)
+    result = []
     for item in input_list:
         out_item1 = {column: item[column] for column in first}
-        out_item2 = {column: item[column] for column in item.keys() if column not in first and column not in last}
+        out_item2 = {column: item[column] if column in item.keys() else '' for column in middle}
         out_item3 = {column: item[column] for column in last}
         result.append({**out_item1, **out_item2, **out_item3})
     return result
@@ -191,7 +247,7 @@ if __name__ == '__main__':
             'https://sanantonio.craigslist.org/d/cars-trucks/search/cta?s=2880'
         ],
         'min_price': 6000,
-        'max_price': 9000,
+        'max_price': 16001,
         'type': 'car',
         'output_file': 'car_data',
         'scrap_time': None
@@ -200,7 +256,16 @@ if __name__ == '__main__':
     SEARCH = CAR
     result = get_raw(SEARCH)
     if SEARCH['type'] == 'car':
+        find_model_year(result)
+        find_car_model(result)
         result = filter_car_result(SEARCH, result)
+        # ks =[]
+        # for item in result:
+        #     for k in item.keys():
+        #         if k not in ks:
+        #             ks.append(k)
+        # print(ks)
+        # sys.exit()
     elif SEARCH['type'] == 'cpu':
         result = filter_cpu_result(SEARCH, result)
     result = sort_columns(result)

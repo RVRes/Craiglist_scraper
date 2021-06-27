@@ -5,6 +5,7 @@ import pickle
 from datetime import datetime, timedelta
 import re
 import os
+import pickle
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -40,6 +41,17 @@ CAR = {
     'output_file': 'car_data',
     'scrap_time': None
 }
+
+
+def save_sentlinks(sent_list: list):
+    with open(f'{THIS_DIR}/Secrets/linklist.dat', 'wb') as filehandle:
+        pickle.dump(sent_list, filehandle)
+
+
+def load_sentlinks():
+    with open(f'{THIS_DIR}/Secrets/linklist.dat', 'rb') as filehandle:
+        linklist = pickle.load(filehandle)
+    return linklist
 
 
 def save_settings(opt: dict):
@@ -153,12 +165,14 @@ def filter_car_result(arg, raw_result):
 
 
 if __name__ == '__main__':
-    # TODO сохранить файл c токеном odt в пароли
-    print(THIS_DIR)
+    try:
+        sent_links = load_sentlinks()
+    except:
+        sent_links = []
 
     settings = load_settings()
     url = settings['url'] + settings['token']
-    channel_ids = settings['channel_ids_rvr']
+    channel_ids = settings['channel_ids']
     channel_rvr = settings['channel_ids_rvr']
     today = datetime.today().date()
 
@@ -176,9 +190,16 @@ if __name__ == '__main__':
         send_telegram(channel_rvr, f'{result[0]["link"]}')
         send_telegram(channel_rvr, f'{result[-1]["link"]}')
     else:
-        send_telegram(channel_ids, f'{today}: {len(result)} cars found:')
-        for item in result:
-            send_telegram(channel_ids, f'{result[0]["link"]}')
+        old_matches = len(result)
+        result = [item for item in result if item["link"] not in sent_links]
+        if not result:
+            send_telegram(channel_rvr, f'{today}: no new matches {old_matches} old. working')
+        else:
+            send_telegram(channel_ids, f'{today}: {len(result)} new cars found, {old_matches} total:')
+            for item in result:
+                send_telegram(channel_ids, f'{item["link"]}')
+                sent_links.append(item["link"])
+                save_sentlinks(sent_links)
 
     # print(result[0])
     # print(len(result))

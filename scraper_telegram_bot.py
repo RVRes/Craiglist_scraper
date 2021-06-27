@@ -4,6 +4,9 @@ import json
 import pickle
 from datetime import datetime, timedelta
 import re
+import os
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CAR = {
     'LINKS': [
@@ -40,12 +43,12 @@ CAR = {
 
 
 def save_settings(opt: dict):
-    with open('Secrets/settings.txt', 'w') as outfile:
+    with open(f'{THIS_DIR}/Secrets/settings.txt', 'w') as outfile:
         json.dump(opt, outfile)
 
 
 def load_settings() -> dict:
-    with open('Secrets/settings.txt') as json_file:
+    with open(f'{THIS_DIR}/Secrets/settings.txt') as json_file:
         data = json.load(json_file)
     return data
 
@@ -151,6 +154,8 @@ def filter_car_result(arg, raw_result):
 
 if __name__ == '__main__':
     # TODO сохранить файл c токеном odt в пароли
+    print(THIS_DIR)
+
     settings = load_settings()
     url = settings['url'] + settings['token']
     channel_ids = settings['channel_ids_rvr']
@@ -158,7 +163,7 @@ if __name__ == '__main__':
     today = datetime.today().date()
 
     # send_telegram('test text')
-    with open(f'Data/car_data.dat', 'rb') as filehandle:
+    with open(f'{THIS_DIR}/Data/car_data.dat', 'rb') as filehandle:
         data = pickle.load(filehandle)
     result = data['data']
     find_model_year(result)

@@ -259,6 +259,7 @@ if __name__ == '__main__':
         find_model_year(result)
         find_car_model(result)
         result = filter_car_result(SEARCH, result)
+        result = sort_columns(result)
         # ks =[]
         # for item in result:
         #     for k in item.keys():
@@ -268,7 +269,6 @@ if __name__ == '__main__':
         # sys.exit()
     elif SEARCH['type'] == 'cpu':
         result = filter_cpu_result(SEARCH, result)
-    result = sort_columns(result)
     print(tabulate(result, headers="keys", tablefmt="plain"))
     writeExcel(SEARCH['output_file'], result)
 

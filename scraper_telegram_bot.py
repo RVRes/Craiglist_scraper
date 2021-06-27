@@ -129,7 +129,7 @@ def find_car_model(input_list: list):
 
 def filter_car_result(arg, raw_result):
     EXCEPTIONS = []
-    date_from = (datetime.today() - timedelta(days=2)).date()
+    date_from = (datetime.now() - timedelta(days=3)).date()
 
     result = []
     ids = []
@@ -139,14 +139,10 @@ def filter_car_result(arg, raw_result):
         cs = (str(item['price']) + item['name'] + item['info'] if 'info' in item.keys() else '').lower()
         pnott = (str(item['price']) + item['name'] +
                  item['fuel'] if 'fuel' in item.keys() else '' +
-                                                            item[
-                                                                'title status'] if 'title status' in item.keys() else '' +
-                                                                                                                      item[
-                                                                                                                          'condition'] if 'condition' in item.keys() else '' +
-                                                                                                                                                                          item[
-                                                                                                                                                                              'area'] if 'area' in item.keys() else '' +
-                                                                                                                                                                                                                    item[
-                                                                                                                                                                                                                        'paint color'] if 'paint color' in item.keys() else '').lower()
+                 item['title status'] if 'title status' in item.keys() else '' +
+                 item['condition'] if 'condition' in item.keys() else '' +
+                 item['area'] if 'area' in item.keys() else '' +
+                 item['paint color'] if 'paint color' in item.keys() else '').lower()
         if item_date >= date_from and item['id'] not in EXCEPTIONS \
                 and item['id'] not in ids and pnott not in pnotts \
                 and 3000 <= item['price'] <= 8000 \
@@ -186,7 +182,7 @@ if __name__ == '__main__':
     url = settings['url'] + settings['token']
     channel_ids = settings['channel_ids']
     channel_rvr = settings['channel_ids_rvr']
-    today = datetime.today().date()
+    today = (datetime.now() - timedelta(hours=8)).date()
 
     result = get_raw(CAR)
 

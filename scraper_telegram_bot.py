@@ -207,6 +207,3 @@ if __name__ == '__main__':
                 sent_links.append(item["link"])
                 save_sentlinks(sent_links)
 
-    # test autodeploy
-    # print(result[0])
-    # print(len(result))

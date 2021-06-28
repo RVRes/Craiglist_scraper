@@ -150,7 +150,7 @@ def filter_car_result(arg, raw_result):
                      or 'honda' in cs or 'hyundai' in cs or 'mitsubishi' in cs or 'kia' in cs) \
                 and ('odometer' in item.keys() and int(item['odometer']) <= 100000) \
                 and ('area' in item.keys() and item['area'] == 'austin') \
-                and ('year' in item.keys() and item['year'] is not None and int(item['year']) >= 2017) \
+                and ('year' in item.keys() and item['year'] is not None and int(item['year']) >= 2016) \
                 and ('transmission' in item.keys() and item['transmission'] == 'automatic') \
                 and ('title status' in item.keys() and item['title status'] == 'clean'):
             result.append(item)

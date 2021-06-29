@@ -148,9 +148,9 @@ def filter_car_result(arg, raw_result):
                 and 5000 <= item['price'] <= 9000 \
                 and ('toyota' in cs or 'mazda' in cs or 'nissan' in cs or 'ford' in cs
                      or 'honda' in cs or 'hyundai' in cs or 'mitsubishi' in cs or 'kia' in cs) \
-                and ('odometer' in item.keys() and int(item['odometer']) <= 110000) \
+                and ('odometer' in item.keys() and int(item['odometer']) <= 130000) \
                 and ('area' in item.keys() and item['area'] == 'austin') \
-                and ('year' in item.keys() and item['year'] is not None and int(item['year']) >= 2016) \
+                and ('year' in item.keys() and item['year'] is not None and int(item['year']) >= 2015) \
                 and ('transmission' in item.keys() and item['transmission'] == 'automatic') \
                 and ('title status' in item.keys() and item['title status'] == 'clean'):
             result.append(item)
@@ -158,10 +158,10 @@ def filter_car_result(arg, raw_result):
             pnotts.append(pnott)
         if item_date >= date_from and item['id'] not in EXCEPTIONS \
                 and item['id'] not in ids and pnott not in pnotts \
-                and 8001 <= item['price'] <= 11000 \
+                and 9001 <= item['price'] <= 11000 \
                 and ('toyota' in cs or 'mazda' in cs or 'nissan' in cs or 'ford' in cs
                      or 'honda' in cs or 'hyundai' in cs or 'mitsubishi' in cs or 'kia' in cs) \
-                and ('odometer' in item.keys() and int(item['odometer']) <= 80000) \
+                and ('odometer' in item.keys() and int(item['odometer']) <= 90000) \
                 and ('area' in item.keys() and item['area'] == 'austin') \
                 and ('year' in item.keys() and item['year'] is not None and int(item['year']) >= 2018) \
                 and ('transmission' in item.keys() and item['transmission'] == 'automatic') \
@@ -191,7 +191,7 @@ if __name__ == '__main__':
     result = filter_car_result(CAR, result)
     if not result:
         send_telegram(channel_rvr, f'{today}: no car matches. working')
-    elif len(result) > 10:
+    elif len(result) > 20:
         send_telegram(channel_rvr, f'{today}: too many results: {len(result)}. Check settings.')
         send_telegram(channel_rvr, f'{result[0]["link"]}')
         send_telegram(channel_rvr, f'{result[-1]["link"]}')

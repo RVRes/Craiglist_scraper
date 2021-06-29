@@ -70,9 +70,28 @@ def filter_cpu_result(arg, raw_result):
     return result
 
 
+def filter_monitor_result(arg, raw_result):
+    EXCEPTIONS = []
+    date_from = datetime.strptime('2021-06-08', '%Y-%m-%d').date()
+    result = []
+    ids = []
+    for item in raw_result:
+        item_date = datetime.strptime(item['datetime'], '%Y-%m-%d').date()
+        cs = (item['name'] + item['info']).lower()
+        if item_date >= date_from and item['id'] not in EXCEPTIONS \
+            and arg['min_price'] <= item['price'] <= arg['max_price'] and \
+            item['id'] not in ids and \
+            ('monitor' in cs or 'samsung' in cs or 'lg' in cs or 'dell' in cs) and \
+            ('printer' not in cs and 'tv' not in cs):
+
+            result.append(item)
+            ids.append(item['id'])
+    return result
+
+
 def filter_car_result(arg, raw_result):
     EXCEPTIONS = []
-    date_from = datetime.strptime('2021-06-12', '%Y-%m-%d').date()
+    date_from = datetime.strptime('2021-06-10', '%Y-%m-%d').date()
     result = []
     ids = []
     pnotts = []
@@ -85,6 +104,8 @@ def filter_car_result(arg, raw_result):
                 item['condition'] if 'condition' in item.keys() else '' +
                 item['area'] if 'area' in item.keys() else '' +
                 item['paint color'] if 'paint color' in item.keys() else '').lower()
+
+
         if item_date >= date_from and item['id'] not in EXCEPTIONS \
                 and item['id'] not in ids and pnott not in pnotts\
                 and arg['min_price'] <= item['price'] <= arg['max_price'] \
@@ -94,13 +115,7 @@ def filter_car_result(arg, raw_result):
                 and ('year' not in item.keys() or item['year'] is None or int(item['year']) >= 2010) \
                 and ('transmission' not in item.keys() or item['transmission'] != 'manual') \
                 and ('title status' not in item.keys() or item['title status'] == 'clean'):
-        # if item_date >= date_from and item['id'] not in EXCEPTIONS \
-        #         and item['id'] not in ids and cs not in css\
-        #         and ('camry' in cs) \
-        #         and ('odometer' not in item.keys() or int(item['odometer']) <= 200000) \
-        #         and ('year' not in item.keys() or item['year'] is None or int(item['year']) >= 2000) \
-        #         and ('transmission' not in item.keys() or item['transmission'] != 'manual') \
-        #         and ('title status' not in item.keys() or item['title status'] != 'rebuilt'):
+
             result.append(item)
             ids.append(item['id'])
             pnotts.append(pnott)
@@ -108,7 +123,7 @@ def filter_car_result(arg, raw_result):
 
 
 def get_raw(args):
-    datatime, result = loadData(args['output_file'])
+    datatime, result = loadData(args['type'])
     if not datatime or datetime.now() - datatime > timedelta(hours=12):
         scraper = Scraper(**args)
         result = scraper.scrap
@@ -168,6 +183,29 @@ def sort_columns(input_list: list) -> list:
 
 
 if __name__ == '__main__':
+    MONITOR = {
+        'LINKS': [
+            'https://sanmarcos.craigslist.org/d/for-sale/search/sss?query=computers&sort=rel',
+            'https://austin.craigslist.org/search/sya?',
+            'https://austin.craigslist.org/d/computers/search/sya?s=120',
+            'https://austin.craigslist.org/d/computers/search/sya?s=240',
+            'https://austin.craigslist.org/d/computers/search/sya?s=360',
+            'https://austin.craigslist.org/d/computers/search/sya?s=480',
+            'https://austin.craigslist.org/d/computers/search/sya?s=600',
+            'https://austin.craigslist.org/d/computers/search/sya?s=720',
+            'https://austin.craigslist.org/d/computers/search/sya?s=840',
+
+            'https://sanantonio.craigslist.org/d/computers/search/sya',
+            'https://sanantonio.craigslist.org/d/computers/search/sya?s=120',
+            'https://sanantonio.craigslist.org/d/computers/search/sya?s=240',
+            'https://sanantonio.craigslist.org/d/computers/search/sya?s=360'
+        ],
+        'min_price': 10,
+        'max_price': 50,
+        'type': 'cpu',
+        'output_file': 'monitor_data',
+        'scrap_time': None
+    }
     CPU = {
         'LINKS': [
             'https://sanmarcos.craigslist.org/d/for-sale/search/sss?query=computers&sort=rel',
@@ -246,7 +284,7 @@ if __name__ == '__main__':
             'https://sanantonio.craigslist.org/d/cars-trucks/search/cta?s=2760',
             'https://sanantonio.craigslist.org/d/cars-trucks/search/cta?s=2880'
         ],
-        'min_price': 6000,
+        'min_price': 4000,
         'max_price': 16001,
         'type': 'car',
         'output_file': 'car_data',
@@ -255,20 +293,15 @@ if __name__ == '__main__':
 
     SEARCH = CAR
     result = get_raw(SEARCH)
-    if SEARCH['type'] == 'car':
+    if SEARCH['output_file'] == 'car_data':
         find_model_year(result)
         find_car_model(result)
         result = filter_car_result(SEARCH, result)
         result = sort_columns(result)
-        # ks =[]
-        # for item in result:
-        #     for k in item.keys():
-        #         if k not in ks:
-        #             ks.append(k)
-        # print(ks)
-        # sys.exit()
-    elif SEARCH['type'] == 'cpu':
+    elif SEARCH['output_file'] == 'cpu_data':
         result = filter_cpu_result(SEARCH, result)
+    elif SEARCH['output_file'] == 'monitor_data':
+        result = filter_monitor_result(SEARCH, result)
     print(tabulate(result, headers="keys", tablefmt="plain"))
     writeExcel(SEARCH['output_file'], result)
 

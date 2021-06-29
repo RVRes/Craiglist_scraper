@@ -145,10 +145,10 @@ def filter_car_result(arg, raw_result):
                  item['paint color'] if 'paint color' in item.keys() else '').lower()
         if item_date >= date_from and item['id'] not in EXCEPTIONS \
                 and item['id'] not in ids and pnott not in pnotts \
-                and 3000 <= item['price'] <= 8000 \
+                and 5000 <= item['price'] <= 9000 \
                 and ('toyota' in cs or 'mazda' in cs or 'nissan' in cs or 'ford' in cs
                      or 'honda' in cs or 'hyundai' in cs or 'mitsubishi' in cs or 'kia' in cs) \
-                and ('odometer' in item.keys() and int(item['odometer']) <= 100000) \
+                and ('odometer' in item.keys() and int(item['odometer']) <= 110000) \
                 and ('area' in item.keys() and item['area'] == 'austin') \
                 and ('year' in item.keys() and item['year'] is not None and int(item['year']) >= 2016) \
                 and ('transmission' in item.keys() and item['transmission'] == 'automatic') \
@@ -158,12 +158,12 @@ def filter_car_result(arg, raw_result):
             pnotts.append(pnott)
         if item_date >= date_from and item['id'] not in EXCEPTIONS \
                 and item['id'] not in ids and pnott not in pnotts \
-                and 8001 <= item['price'] <= 10000 \
+                and 8001 <= item['price'] <= 11000 \
                 and ('toyota' in cs or 'mazda' in cs or 'nissan' in cs or 'ford' in cs
                      or 'honda' in cs or 'hyundai' in cs or 'mitsubishi' in cs or 'kia' in cs) \
-                and ('odometer' in item.keys() and int(item['odometer']) <= 60000) \
+                and ('odometer' in item.keys() and int(item['odometer']) <= 80000) \
                 and ('area' in item.keys() and item['area'] == 'austin') \
-                and ('year' in item.keys() and item['year'] is not None and int(item['year']) >= 2019) \
+                and ('year' in item.keys() and item['year'] is not None and int(item['year']) >= 2018) \
                 and ('transmission' in item.keys() and item['transmission'] == 'automatic') \
                 and ('title status' in item.keys() and item['title status'] == 'clean'):
             result.append(item)

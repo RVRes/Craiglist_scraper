@@ -88,6 +88,24 @@ def filter_monitor_result(arg, raw_result):
             ids.append(item['id'])
     return result
 
+def filter_graphiccard_result(arg, raw_result):
+    EXCEPTIONS = []
+    date_from = datetime.strptime('2021-07-01', '%Y-%m-%d').date()
+    result = []
+    ids = []
+    for item in raw_result:
+        item_date = datetime.strptime(item['datetime'], '%Y-%m-%d').date()
+        cs = (item['name'] + item['info'] if item['info'] in item.keys() else '').lower()
+        if item_date >= date_from and item['id'] not in EXCEPTIONS \
+            and arg['min_price'] <= item['price'] <= arg['max_price'] and \
+            item['id'] not in ids and \
+            ('graphic' in cs or 'video' in cs or 'radeon' in cs or 'geforce' in cs) and \
+            ('printer' not in cs and 'tv' not in cs):
+
+            result.append(item)
+            ids.append(item['id'])
+    return result
+
 
 def filter_car_result(arg, raw_result):
     EXCEPTIONS = []
@@ -208,7 +226,7 @@ if __name__ == '__main__':
     }
     CPU = {
         'LINKS': [
-            'https://sanmarcos.craigslist.org/d/for-sale/search/sss?query=computers&sort=rel',
+            'https://sanmarcos.craigslist.org/d/computer-parts/search/syp?query=computers&sort=rel',
             'https://austin.craigslist.org/search/sya?',
             'https://austin.craigslist.org/d/computers/search/sya?s=120',
             'https://austin.craigslist.org/d/computers/search/sya?s=240',
@@ -229,6 +247,30 @@ if __name__ == '__main__':
         'output_file': 'cpu_data',
         'scrap_time': None
     }
+    GRAPHICCARD = {
+        'LINKS': [
+            'https://sanmarcos.craigslist.org/d/for-sale/search/sss?query=computers&sort=rel',
+            'https://austin.craigslist.org/search/sya?',
+            'https://austin.craigslist.org/d/computers/search/sya?s=120',
+            'https://austin.craigslist.org/d/computers/search/sya?s=240',
+            'https://austin.craigslist.org/d/computers/search/sya?s=360',
+            'https://austin.craigslist.org/d/computers/search/sya?s=480',
+            'https://austin.craigslist.org/d/computers/search/sya?s=600',
+            'https://austin.craigslist.org/d/computers/search/sya?s=720',
+            'https://austin.craigslist.org/d/computers/search/sya?s=840',
+
+            'https://sanantonio.craigslist.org/d/computers/search/sya',
+            'https://sanantonio.craigslist.org/d/computers/search/sya?s=120',
+            'https://sanantonio.craigslist.org/d/computers/search/sya?s=240',
+            'https://sanantonio.craigslist.org/d/computers/search/sya?s=360'
+        ],
+        'min_price': 0,
+        'max_price': 1000,
+        'type': 'cpu',
+        'output_file': 'graphcard_data',
+        'scrap_time': None
+    }
+
     CAR = {
         'LINKS': [
             'https://austin.craigslist.org/d/cars-trucks/search/cta'
@@ -291,7 +333,7 @@ if __name__ == '__main__':
         'scrap_time': None
     }
 
-    SEARCH = CAR
+    SEARCH = CPU
     result = get_raw(SEARCH)
     if SEARCH['output_file'] == 'car_data':
         find_model_year(result)
@@ -302,6 +344,8 @@ if __name__ == '__main__':
         result = filter_cpu_result(SEARCH, result)
     elif SEARCH['output_file'] == 'monitor_data':
         result = filter_monitor_result(SEARCH, result)
+    elif SEARCH['output_file'] == 'graphcard_data':
+        result = filter_graphiccard_result(SEARCH, result)
     print(tabulate(result, headers="keys", tablefmt="plain"))
     writeExcel(SEARCH['output_file'], result)
 
